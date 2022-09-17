@@ -9,7 +9,7 @@ class GiraApplicationTests {
 
 	@Test
 	void contextLoads() {
-		assertThat(1 + 1).isEqualTo(2);
+		assertThat(1 + 2).isEqualTo(3);
 	}
 
 }
