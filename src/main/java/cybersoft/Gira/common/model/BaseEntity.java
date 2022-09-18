@@ -56,7 +56,7 @@ public class BaseEntity implements Serializable {
     @LastModifiedDate
     @Column(name = Columns.LAST_MODIFIED_AT)
     protected LocalDateTime lastModifiedAt;
-
+//s
     // inner class
     @UtilityClass
     static class Columns {
