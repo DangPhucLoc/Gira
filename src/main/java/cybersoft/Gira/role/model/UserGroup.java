@@ -1,5 +1,7 @@
 package cybersoft.Gira.role.model;
+
 import cybersoft.Gira.common.model.BaseEntity;
+import cybersoft.Gira.user.model.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +23,9 @@ public class UserGroup extends BaseEntity {
     @ManyToMany(mappedBy = "userGroups", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Role> roles = new LinkedHashSet<>();
 
+    @ManyToMany(mappedBy = "userGroups", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<User> users = new LinkedHashSet<>();
+
     @Column(name = RoleEntity.UserGroup.NAME, unique = true, length = 100)
     @Length(min = 5, max = 100, message = "Role name must have length between {min} and {max}")
     private String name;
@@ -32,4 +37,6 @@ public class UserGroup extends BaseEntity {
     @Column(name = RoleEntity.UserGroup.DESCRIPTION)
     @NotBlank
     private String description;
+
+
 }
