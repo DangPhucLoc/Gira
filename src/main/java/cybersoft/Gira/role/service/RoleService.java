@@ -1,36 +1,41 @@
 package cybersoft.Gira.role.service;
 
+import cybersoft.Gira.common.service.GenericService;
+import cybersoft.Gira.common.util.GiraMapper;
+import cybersoft.Gira.role.dto.RoleDTO;
+import cybersoft.Gira.role.dto.RoleWithOperationsDTO;
+import cybersoft.Gira.role.model.Operation;
 import cybersoft.Gira.role.model.Role;
 import cybersoft.Gira.role.repository.RoleRepository;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.ValidationException;
 import java.util.List;
+import java.util.UUID;
 
-public interface RoleService {
-    List<Role> findAll();
-    Role save(Role role);
+public interface RoleService extends GenericService<Role, RoleDTO, UUID> {
     Role update(Role role, String code);
-    void delete(String code);
+    void deleteByCode(String code);
+
+    RoleDTO save(RoleDTO dto);
+
+    RoleWithOperationsDTO addOperations(UUID roleId, List<UUID> ids);
 }
-@Transactional
+
 @Service
-class RoleServiceImp implements RoleService {
+@Transactional
+class RoleServiceImpl implements RoleService {
     private final RoleRepository repository;
+    private final GiraMapper mapper;
+    private final OperationService operationService;
 
-    public RoleServiceImp(RoleRepository repository) {
+    public RoleServiceImpl(RoleRepository repository, GiraMapper mapper, OperationService operationService){
         this.repository = repository;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Role> findAll() {
-        return repository.findAll();
-    }
-
-    @Override
-    public Role save(Role role) {
-        return repository.save(role);
+        this.mapper = mapper;
+        this.operationService = operationService;
     }
 
     @Override
@@ -42,7 +47,39 @@ class RoleServiceImp implements RoleService {
     }
 
     @Override
-    public void delete(String code) {
-    repository.deleteByCode(code);
+    public void deleteByCode(String code) {
+        repository.deleteByCode(code);
+    }
+
+    @Override
+    public RoleDTO save(RoleDTO dto) {
+        Role model = mapper.map(dto, Role.class);
+        Role savedModel = repository.save(model);
+        return mapper.map(savedModel, RoleDTO.class);
+    }
+
+    @Override
+    public RoleWithOperationsDTO addOperations(UUID roleId, List<UUID> ids) {
+        Role curRole = repository.findById(roleId)
+                .orElseThrow( () ->
+                        new ValidationException("Role is not existed.")
+                );
+
+        List<Operation> operations = operationService.findByIds(ids);
+
+        operations.forEach(curRole::addService);
+
+        return mapper.map(curRole, RoleWithOperationsDTO.class);
+    }
+
+
+    @Override
+    public JpaRepository<Role, UUID> getRepository() {
+        return this.repository;
+    }
+
+    @Override
+    public ModelMapper getMapper() {
+        return this.mapper;
     }
 }

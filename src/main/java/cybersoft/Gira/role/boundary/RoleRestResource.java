@@ -1,27 +1,53 @@
 package cybersoft.Gira.role.boundary;
 
+import cybersoft.Gira.common.util.ResponseUtils;
+import cybersoft.Gira.role.dto.RoleDTO;
 import cybersoft.Gira.role.model.Role;
 import cybersoft.Gira.role.service.RoleService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/roles")
 public class RoleRestResource {
     private final RoleService service;
 
-    public RoleRestResource(RoleService roleService) {
+    public RoleRestResource(RoleService roleService){
         this.service = roleService;
     }
 
     @GetMapping
-    public Object findAll() {
-        return new ResponseEntity<>(service.findAll(), HttpStatus.OK);
+    public Object findAll(){
+        return ResponseUtils.get(service.findAllDto(RoleDTO.class), HttpStatus.OK);
+    }
+
+    @GetMapping("/paging")
+    public Object findAllDtoPaging(@RequestParam("size") int size,
+                                   @RequestParam("index") int index){
+        return ResponseUtils.get(
+                service.findAllDto(Pageable.ofSize(size).withPage(index), RoleDTO.class)
+                , HttpStatus.OK
+        );
     }
 
     @PostMapping
-    public Object save(@RequestBody Role role) {
-        return new ResponseEntity<>(service.save(role),HttpStatus.OK);
+    public Object save(@RequestBody @Valid RoleDTO roleDTO){
+        return ResponseUtils.get(service.save(roleDTO), HttpStatus.CREATED);
+    }
+
+    @PostMapping("{role-id}/add-operations")
+    public ResponseEntity<?> addOperations(
+            @RequestBody List<UUID> ids,
+            @PathVariable("role-id") UUID roleId){
+        return ResponseUtils.get(
+                service.addOperations(roleId, ids)
+                , HttpStatus.OK
+        );
     }
 }
