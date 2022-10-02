@@ -12,4 +12,6 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
     Role deleteByCode(String code);
 
     Optional<Role> findByName(String name);
+
+
 }
